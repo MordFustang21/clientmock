@@ -1,6 +1,6 @@
 # clientmock
-[![GoDoc](https://godoc.org/github.com/MordFustang21/clientmock?status.svg)](https://godoc.org/github.com/MordFustang21/supernova)
-[![Go Report Card](https://goreportcard.com/badge/github.com/MordFustang21/clientmock)](https://goreportcard.com/report/github.com/mordfustang21/supernova)
+[![GoDoc](https://godoc.org/github.com/MordFustang21/clientmock?status.svg)](https://godoc.org/github.com/MordFustang21/clientmock)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MordFustang21/clientmock)](https://goreportcard.com/report/github.com/MordFustang21/clientmock)
 
 A mockable http.Client used to validate request data and return fake response data
 
