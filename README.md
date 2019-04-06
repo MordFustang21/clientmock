@@ -19,14 +19,14 @@ import (
 
 func TestGet(t *testing.T) {
 	client, mock, err := clientmock.NewClient()
-    if err != nil {
-        t.Fatal(err)
-    }
+	if err != nil {
+		t.Fatal(err)
+	}
 	
 	expectedStatus := http.StatusBadRequest
 	expectedBody := "empty request body"
-
-    mock.ReturnStatus(expectedStatus)
+	
+	mock.ReturnStatus(expectedStatus)
 	mock.ReturnBody(bytes.NewBufferString(expectedBody))
 	
 	req, err := http.NewRequest(http.MethodPost, "http://www.github.com", nil)
@@ -54,9 +54,6 @@ func TestGet(t *testing.T) {
 	if string(data) != expectedBody {
 		t.Fatal("returned body doesn't match expected")
 	}
-	
-	
-	
 }
 
 ```
