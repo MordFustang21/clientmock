@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// Expectation is an interface for an expectation check for the request that will be made
 type Expectation interface {
 	// Check will give the expectation the incoming request to be validated
 	Check(req *http.Request)
@@ -50,6 +51,7 @@ type ExpectedBody struct {
 	msg  string
 }
 
+// Check will verify the body in the request matches the expected body
 func (e *ExpectedBody) Check(req *http.Request) {
 	data, _ := ioutil.ReadAll(req.Body)
 
@@ -61,10 +63,12 @@ func (e *ExpectedBody) Check(req *http.Request) {
 	e.met = true
 }
 
+// Met returns whether or not the expectation has been met
 func (e *ExpectedBody) Met() bool {
 	return e.met
 }
 
+// Message is the error message set by Check if it fails
 func (e *ExpectedBody) Message() string {
 	return e.msg
 }

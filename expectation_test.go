@@ -127,7 +127,7 @@ func (l *localhostExpectation) Message() string {
 	return l.msg
 }
 
-func TestClientMock_Expection(t *testing.T) {
+func TestClientMock_Expectation(t *testing.T) {
 	tests := []struct {
 		name    string
 		url     string

@@ -16,6 +16,7 @@ type SetStatusCode struct {
 	code int
 }
 
+// Set will set the response status code with the returning status
 func (s *SetStatusCode) Set(resp *http.Response) {
 	resp.StatusCode = s.code
 	resp.Status = http.StatusText(s.code)
@@ -26,6 +27,7 @@ type SetBody struct {
 	body io.Reader
 }
 
+// Set will set the response body with the returning body
 func (s *SetBody) Set(response *http.Response) {
 	response.Body = ioutil.NopCloser(s.body)
 }
