@@ -79,3 +79,27 @@ func TestClientMock_ReturnBody(t *testing.T) {
 		})
 	}
 }
+
+func TestClientMock_ReadUnsetBody(t *testing.T) {
+	client, mock, err := NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mock.ExpectMethod(http.MethodPost)
+
+	res, err := client.Get("http://localhost")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+
+	data, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if data == nil {
+		t.Fatal("nil data read from body")
+	}
+}

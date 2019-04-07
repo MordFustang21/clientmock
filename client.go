@@ -1,6 +1,7 @@
 package clientmock
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -37,7 +38,7 @@ func (m *clientMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	if resp.Body == nil {
-		resp.Body = ioutil.NopCloser(nil)
+		resp.Body = ioutil.NopCloser(&bytes.Buffer{})
 	}
 
 	return resp, nil
