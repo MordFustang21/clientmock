@@ -72,3 +72,29 @@ func (e *ExpectedBody) Met() bool {
 func (e *ExpectedBody) Message() string {
 	return e.msg
 }
+
+type ExpectedPath struct {
+	path string
+	met bool
+	msg string
+}
+
+func (e *ExpectedPath) Check(req *http.Request) {
+	if e.path != req.URL.Path {
+		e.msg = fmt.Sprintf("expected path %s got %s", e.path, req.URL.Path)
+		return
+	}
+
+	e.met = true
+}
+
+func (e *ExpectedPath) Met() bool {
+	return e.met
+}
+
+func (e *ExpectedPath) Message() string {
+	return e.msg
+}
+
+
+

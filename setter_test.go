@@ -19,6 +19,11 @@ func TestClientMock_ReturnStatus(t *testing.T) {
 			http.StatusOK,
 			http.StatusOK,
 			false,
+		}, {
+			"status don't match",
+			http.StatusCreated,
+			http.StatusOK,
+			true,
 		},
 	}
 	for _, test := range tests {
@@ -36,7 +41,7 @@ func TestClientMock_ReturnStatus(t *testing.T) {
 			}
 			defer res.Body.Close()
 
-			if res.StatusCode != test.expectedStatus {
+			if (test.expectedErr) != (res.StatusCode != test.expectedStatus) {
 				t.Fatalf("response codes don't match expected %d got %d", test.expectedStatus, res.StatusCode)
 			}
 		})

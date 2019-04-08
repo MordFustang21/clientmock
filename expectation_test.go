@@ -2,6 +2,7 @@ package clientmock
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -155,6 +156,56 @@ func TestClientMock_Expectation(t *testing.T) {
 			mock.Expectation(&localhostExpectation{})
 
 			res, err := client.Get(test.url)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+
+			err = mock.ExpectationsMet()
+			if (err != nil) != test.wantErr {
+				t.Fatalf("error check failed wantError: %t got %v", test.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestClientMock_ExpectPath(t *testing.T) {
+
+	tests := []struct {
+		name         string
+		reqPath      string
+		expectedPath string
+		wantErr      bool
+	}{
+		{
+			"expected correct",
+			"/test/path",
+			"/test/path",
+			false,
+		},
+		{
+			"expected error",
+			"/test/path",
+			"/path/test",
+			true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client, mock, err := NewClient()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			mock.ExpectPath(test.expectedPath)
+
+			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://test.com%s", test.reqPath), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			res, err := client.Do(req)
 			if err != nil {
 				t.Fatal(err)
 			}

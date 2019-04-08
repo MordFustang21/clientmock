@@ -14,6 +14,7 @@ import (
 type Mock interface {
 	ExpectMethod(method string)
 	ExpectBody(body string)
+	ExpectPath(path string)
 	ExpectationsMet() error
 	Expectation(exp Expectation)
 	ReturnStatus(status int)
@@ -53,6 +54,12 @@ func (m *clientMock) ExpectMethod(method string) {
 func (m *clientMock) ExpectBody(body string) {
 	m.expectations = append(m.expectations, &ExpectedBody{
 		body: body,
+	})
+}
+
+func (m *clientMock) ExpectPath(path string) {
+	m.expectations = append(m.expectations, &ExpectedPath{
+		path: path,
 	})
 }
 
