@@ -31,3 +31,13 @@ type SetBody struct {
 func (s *SetBody) Set(response *http.Response) {
 	response.Body = ioutil.NopCloser(s.body)
 }
+
+// SetHeader implements the Setter interface and sets the response headers
+type SetHeader struct {
+	h http.Header
+}
+
+// Set sets the response headers on the request
+func (s *SetHeader) Set(response *http.Response) {
+	response.Header = s.h
+}

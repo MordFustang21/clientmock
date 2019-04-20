@@ -19,11 +19,6 @@ func TestClientMock_ReturnStatus(t *testing.T) {
 			http.StatusOK,
 			http.StatusOK,
 			false,
-		}, {
-			"status don't match",
-			http.StatusCreated,
-			http.StatusOK,
-			true,
 		},
 	}
 	for _, test := range tests {
@@ -41,7 +36,7 @@ func TestClientMock_ReturnStatus(t *testing.T) {
 			}
 			defer res.Body.Close()
 
-			if (test.expectedErr) != (res.StatusCode != test.expectedStatus) {
+			if res.StatusCode != test.expectedStatus {
 				t.Fatalf("response codes don't match expected %d got %d", test.expectedStatus, res.StatusCode)
 			}
 		})
@@ -80,6 +75,51 @@ func TestClientMock_ReturnBody(t *testing.T) {
 
 			if string(data) != test.returnBody {
 				t.Fatalf("expected %s got %s", test.returnBody, string(data))
+			}
+		})
+	}
+}
+
+func TestClientMock_ReturnHeaders(t *testing.T) {
+	tests := []struct {
+		name    string
+		headers map[string]string
+	}{
+		{
+			"empty headers",
+			map[string]string{},
+		},
+		{
+			"basic header",
+			map[string]string{"Authorization": "Bearer"},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client, mock, err := NewClient()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			returnHeader := http.Header{}
+			for key, val := range test.headers {
+				returnHeader.Add(key, val)
+			}
+
+			mock.ReturnHeader(returnHeader)
+
+			res, err := client.Get("http://www.test.com")
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+
+			for key := range returnHeader {
+				exp := returnHeader.Get(key)
+				got := res.Header.Get(key)
+				if exp != "" && exp != got {
+					t.Errorf("Expected %s got %s for %s\n", exp, got, key)
+				}
 			}
 		})
 	}

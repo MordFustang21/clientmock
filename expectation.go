@@ -39,7 +39,7 @@ func (m *ExpectedMethod) Met() bool {
 	return m.met
 }
 
-// Message returns the error message is set
+// Message returns the error message or "" if none
 func (m *ExpectedMethod) Message() string {
 	return m.msg
 }
@@ -68,33 +68,38 @@ func (e *ExpectedBody) Met() bool {
 	return e.met
 }
 
-// Message is the error message set by Check if it fails
+// Message returns the error message or "" if none
 func (e *ExpectedBody) Message() string {
 	return e.msg
 }
 
-type ExpectedPath struct {
-	path string
+// ExpectedHeader will verify the sent header matches the expected header
+type ExpectedHeader struct {
+	h   http.Header
 	met bool
 	msg string
 }
 
-func (e *ExpectedPath) Check(req *http.Request) {
-	if e.path != req.URL.Path {
-		e.msg = fmt.Sprintf("expected path %s got %s", e.path, req.URL.Path)
-		return
-	}
-
+// Check will verify the headers match the expected
+func (e *ExpectedHeader) Check(req *http.Request) {
 	e.met = true
+
+	for key := range req.Header {
+		exp := e.h.Get(key)
+		got := req.Header.Get(key)
+		if exp != "" && exp != got {
+			e.met = false
+			e.msg += fmt.Sprintf("Expected %s got %s for %s\n", exp, got, key)
+		}
+	}
 }
 
-func (e *ExpectedPath) Met() bool {
+// Met returns whether or not the expectations were met
+func (e *ExpectedHeader) Met() bool {
 	return e.met
 }
 
-func (e *ExpectedPath) Message() string {
+// Message returns the error message or "" if none
+func (e *ExpectedHeader) Message() string {
 	return e.msg
 }
-
-
-

@@ -2,7 +2,6 @@ package clientmock
 
 import (
 	"bytes"
-	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -169,24 +168,20 @@ func TestClientMock_Expectation(t *testing.T) {
 	}
 }
 
-func TestClientMock_ExpectPath(t *testing.T) {
-
+func TestClientMock_ExpectHeader(t *testing.T) {
 	tests := []struct {
-		name         string
-		reqPath      string
-		expectedPath string
-		wantErr      bool
+		name    string
+		headers map[string]string
+		wantErr bool
 	}{
 		{
 			"expected correct",
-			"/test/path",
-			"/test/path",
+			map[string]string{"Authorization": "Bearer token"},
 			false,
 		},
 		{
 			"expected error",
-			"/test/path",
-			"/path/test",
+			map[string]string{"Authorization": "Bearer"},
 			true,
 		},
 	}
@@ -198,9 +193,73 @@ func TestClientMock_ExpectPath(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			mock.ExpectPath(test.expectedPath)
+			expectedHeader := http.Header{}
+			for key, val := range test.headers {
+				expectedHeader.Add(key, val)
+			}
 
-			req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://test.com%s", test.reqPath), nil)
+			mock.ExpectHeader(expectedHeader)
+
+			req, err := http.NewRequest(http.MethodPost, "http://test.com", nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req.Header.Add("Authorization", "Bearer token")
+
+			res, err := client.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer res.Body.Close()
+
+			err = mock.ExpectationsMet()
+			if (err != nil) != test.wantErr {
+				t.Fatalf("error check failed wantError: %t got %v", test.wantErr, err)
+			}
+		})
+	}
+}
+
+func TestClientMock_ExpectMethodStatus(t *testing.T) {
+
+	tests := []struct {
+		name           string
+		reqMethod      string
+		expectedMethod string
+		expectedStatus int
+		returnStatus   int
+		wantErr        bool
+	}{
+		{
+			"expected correct",
+			http.MethodGet,
+			http.MethodGet,
+			http.StatusOK,
+			http.StatusOK,
+			false,
+		},
+		{
+			"expected error",
+			http.MethodPost,
+			http.MethodGet,
+			http.StatusOK,
+			http.StatusOK,
+			true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			client, mock, err := NewClient()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			mock.ExpectMethod(test.expectedMethod).
+				ReturnStatus(test.expectedStatus)
+
+			req, err := http.NewRequest(test.reqMethod, "http://test.com", nil)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -210,6 +269,10 @@ func TestClientMock_ExpectPath(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer res.Body.Close()
+
+			if res.StatusCode != test.expectedStatus {
+				t.Errorf("expected status %d got %d", test.expectedStatus, res.StatusCode)
+			}
 
 			err = mock.ExpectationsMet()
 			if (err != nil) != test.wantErr {
