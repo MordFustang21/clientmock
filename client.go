@@ -38,18 +38,28 @@ type clientMock struct {
 
 // RoundTrip implements the RoundTripper interface for use on an http.Client
 func (m *clientMock) RoundTrip(req *http.Request) (*http.Response, error) {
-	for _, exp := range m.expectations {
-		exp.Check(req)
+
+	// initialize response with default values
+	resp := &http.Response{
+		Status:        http.StatusText(http.StatusOK),
+		StatusCode:    http.StatusOK,
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+		Body:          ioutil.NopCloser(&bytes.Buffer{}),
+		ContentLength: 0,
+		Request:       req,
+		Header:        make(http.Header, 0),
 	}
 
-	resp := &http.Response{}
-
+	// process all setters
 	for _, setter := range m.setters {
 		setter.Set(resp)
 	}
 
-	if resp.Body == nil {
-		resp.Body = ioutil.NopCloser(&bytes.Buffer{})
+	// process all expectations
+	for _, exp := range m.expectations {
+		exp.Check(req)
 	}
 
 	return resp, nil
