@@ -5,7 +5,13 @@
 
 A mockable http.Client used to validate request data and return fake response data
 
-Example returning status code and body
+## Install
+
+    go get github.com/DATA-DOG/go-sqlmock
+
+## Documentation and Examples
+
+### Example returning status code and body
 ```go
 package main
 
@@ -58,3 +64,12 @@ func TestGet(t *testing.T) {
 }
 
 ```
+
+## Contributions
+
+Feel free to open a pull request. Note, if you wish to contribute an extension to public (exported methods or types) -
+please open an issue before, to discuss whether these changes can be accepted. All backward incompatible changes are
+and will be treated cautiously
+
+## License
+The [GNU General Public License V3.0](https://www.gnu.org/licenses/gpl-3.0.en.html)
