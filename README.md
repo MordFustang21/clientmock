@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/MordFustang21/clientmock/branch/master/graph/badge.svg)](https://codecov.io/gh/MordFustang21/clientmock)
 
 A mockable http.Client used to validate request data and return fake response data
+by replacing the http.Client transport layer.
 
 ## Install
 
