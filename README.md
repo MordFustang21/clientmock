@@ -8,7 +8,7 @@ by replacing the http.Client transport layer.
 
 ## Install
 
-    go get github.com/DATA-DOG/go-sqlmock
+    go get github.com/MordFustang21/clientmock
 
 ## Documentation and Examples
 
