@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"testing"
 )
 
@@ -146,5 +147,19 @@ func TestClientMock_ReadUnsetBody(t *testing.T) {
 
 	if data == nil {
 		t.Fatal("nil data read from body")
+	}
+}
+
+func TestClientMock_ReturnError(t *testing.T) {
+	client, mock, err := NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	mock.ReturnError(&url.Error{})
+
+	_, err = client.Get("http://test.com")
+	if err == nil {
+		t.Fatalf("expected error got %v", err)
 	}
 }

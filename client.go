@@ -28,16 +28,24 @@ type Mock interface {
 	ReturnBody(body io.Reader) Mock
 	// ReturnHeader will set the headers on the returned http.Response to the given headers
 	ReturnHeader(header http.Header) Mock
+	// ReturnError will return an error instead of a response object
+	ReturnError(err error) Mock
 }
 
 // clientMock is the default mock returned when getting a new client
 type clientMock struct {
 	expectations []Expectation
 	setters      []Setter
+	err          error
 }
 
 // RoundTrip implements the RoundTripper interface for use on an http.Client
 func (m *clientMock) RoundTrip(req *http.Request) (*http.Response, error) {
+
+	// if error is set return it instead of response
+	if m.err != nil {
+		return nil, m.err
+	}
 
 	// initialize response with default values
 	resp := &http.Response{
@@ -116,6 +124,11 @@ func (m *clientMock) ReturnHeader(header http.Header) Mock {
 		h: header,
 	})
 
+	return m
+}
+
+func (m *clientMock) ReturnError(err error) Mock {
+	m.err = err
 	return m
 }
 
