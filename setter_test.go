@@ -160,6 +160,6 @@ func TestClientMock_ReturnError(t *testing.T) {
 
 	_, err = client.Get("http://test.com")
 	if err == nil {
-		t.Fatalf("expected error got %v", err)
+		t.Fatal("expected error got nil")
 	}
 }

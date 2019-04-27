@@ -3,9 +3,11 @@ package clientmock
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"sync"
 )
 
 // Mock interface serves to create expectations
@@ -30,10 +32,20 @@ type Mock interface {
 	ReturnHeader(header http.Header) Mock
 	// ReturnError will return an error instead of a response object
 	ReturnError(err error) Mock
+	// Add will add the current expectations, setters, and error to the stack
+	Add() Mock
 }
 
 // clientMock is the default mock returned when getting a new client
 type clientMock struct {
+	requestResponse
+	index int
+	stack []requestResponse
+	sync.RWMutex
+}
+
+// requestResponse contains the setters, expectations, and error for a single request
+type requestResponse struct {
 	expectations []Expectation
 	setters      []Setter
 	err          error
@@ -41,10 +53,22 @@ type clientMock struct {
 
 // RoundTrip implements the RoundTripper interface for use on an http.Client
 func (m *clientMock) RoundTrip(req *http.Request) (*http.Response, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	// if stack is empty (forgot Add()) then call and add 1 request response to stack
+	if len(m.expectations) != 0 || len(m.setters) != 0 || m.err != nil {
+		m.Add()
+	}
+
+	rr := m.stack[m.index]
+	defer func() {
+		m.index++
+	}()
 
 	// if error is set return it instead of response
-	if m.err != nil {
-		return nil, m.err
+	if rr.err != nil {
+		return nil, rr.err
 	}
 
 	// initialize response with default values
@@ -61,12 +85,12 @@ func (m *clientMock) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	// process all setters
-	for _, setter := range m.setters {
+	for _, setter := range rr.setters {
 		setter.Set(resp)
 	}
 
 	// process all expectations
-	for _, exp := range m.expectations {
+	for _, exp := range rr.expectations {
 		exp.Check(req)
 	}
 
@@ -133,19 +157,34 @@ func (m *clientMock) ReturnError(err error) Mock {
 }
 
 func (m *clientMock) ExpectationsMet() error {
-	for _, exp := range m.expectations {
-		if !exp.Met() {
-			return errors.New(exp.Message())
+	for i, rr := range m.stack {
+		for _, exp := range rr.expectations {
+			if !exp.Met() {
+				return errors.New(fmt.Sprintf("error request [%d] message: %s", i+1, exp.Message()))
+			}
 		}
 	}
 
 	return nil
 }
 
+func (m *clientMock) Add() Mock {
+	rr := requestResponse(m.requestResponse)
+
+	m.stack = append(m.stack, rr)
+	m.expectations = make([]Expectation, 0)
+	m.setters = make([]Setter, 0)
+	m.err = nil
+
+	return m
+}
+
 // NewClient create new mockable http.Client
 func NewClient() (*http.Client, Mock, error) {
 	// setup mock
-	m := &clientMock{}
+	m := &clientMock{
+		index: 0,
+	}
 
 	// return mock and client to caller
 	return &http.Client{
