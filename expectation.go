@@ -84,7 +84,7 @@ type ExpectedHeader struct {
 func (e *ExpectedHeader) Check(req *http.Request) {
 	e.met = true
 
-	for key := range req.Header {
+	for key := range e.h {
 		exp := e.h.Get(key)
 		got := req.Header.Get(key)
 		if exp != "" && exp != got {

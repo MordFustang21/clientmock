@@ -221,6 +221,28 @@ func TestClientMock_ExpectHeader(t *testing.T) {
 	}
 }
 
+func TestClientMock_ExpectHeaderNotSend(t *testing.T) {
+	client, mock, err := NewClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	h := http.Header{}
+	h.Set("Authorization", "token")
+	mock.ExpectHeader(h)
+
+	res, err := client.Post("", "application/json", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer res.Body.Close()
+
+	if err := mock.ExpectationsMet(); err == nil {
+		t.Fatal("expected no header set error got nil")
+	}
+}
+
 func TestClientMock_ExpectMethodStatus(t *testing.T) {
 
 	tests := []struct {
